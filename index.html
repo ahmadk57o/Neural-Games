@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuralGames — AI Camera Gaming Arena</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="grid-bg"></div>
+
+  
+  <div id="auth-page" class="page active">
+    <div class="auth-container">
+ 
+
+      
+      <div class="auth-logo">
+        <div class="logo-icon">🧠</div>
+        <h1>NEURALGAMES</h1>
+        <p>AI-POWERED CAMERA GAMING ARENA</p>
+      </div>
+
+      
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-signin" onclick="switchTab('signin')">SIGN IN</button>
+        <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">SIGN UP</button>
+      </div>
+
+      
+      <div id="form-signin" class="auth-form active">
+        <div class="form-group">
+          <label>EMAIL</label>
+          <input type="email" id="si-email" placeholder="your@email.com" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label>PASSWORD</label>
+          <input type="password" id="si-pass" placeholder="Enter password" />
+        </div>
+        <div class="form-error" id="si-error"></div>
+        <button class="btn-primary" onclick="doSignIn()">ENTER ARENA →</button>
+        <p class="auth-switch">Don't have an account? <span onclick="switchTab('signup')">Sign Up</span></p>
+      </div>
+
+      
+      <div id="form-signup" class="auth-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>FIRST NAME</label>
+            <input type="text" id="su-first" placeholder="John" />
+          </div>
+          <div class="form-group">
+            <label>LAST NAME</label>
+            <input type="text" id="su-last" placeholder="Doe" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>EMAIL</label>
+          <input type="email" id="su-email" placeholder="your@email.com" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label>PASSWORD</label>
+          <input type="password" id="su-pass" placeholder="Min 6 characters" />
+        </div>
+        <div class="form-group">
+          <label>CONFIRM PASSWORD</label>
+          <input type="password" id="su-confirm" placeholder="Repeat password" />
+        </div>
+        <div class="form-error" id="su-error"></div>
+        <button class="btn-primary" onclick="doSignUp()">CREATE ACCOUNT →</button>
+        <p class="auth-switch">Already have an account? <span onclick="switchTab('signin')">Sign In</span></p>
+      </div>
+
+    </div>
+  </div>
+
+  
+  <div id="main-page" class="page">
+
+    
+    <nav class="nav">
+      <div class="nav-logo">🧠 NEURALGAMES</div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" id="nt-dashboard" onclick="showSection('dashboard', this)">DASHBOARD</button>
+        <button class="nav-tab" id="nt-games"     onclick="showSection('games', this)">GAMES</button>
+        <button class="nav-tab" id="nt-leaderboard" onclick="showSection('leaderboard', this)">LEADERBOARD</button>
+      </div>
+      <div class="nav-user">
+        <div class="avatar" id="nav-avatar">?</div>
+        <span id="nav-name"></span>
+        <button class="btn-logout" onclick="doLogout()">LOGOUT</button>
+      </div>
+    </nav>
+
+    
+    <div id="section-dashboard" class="section active">
+      <div class="dash-header">
+        <h2>COMMAND CENTER</h2>
+        <p id="dash-greeting">Welcome back, Commander</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card cyan">
+          <div class="stat-label">GAMES PLAYED</div>
+          <div class="stat-value" id="stat-played">0</div>
+          <div class="stat-sub">Total sessions</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">TOTAL WINS</div>
+          <div class="stat-value" id="stat-wins">0</div>
+          <div class="stat-sub">Victories</div>
+        </div>
+        <div class="stat-card pink">
+          <div class="stat-label">WIN RATE</div>
+          <div class="stat-value" id="stat-wr">0%</div>
+          <div class="stat-sub">Victory percentage</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-label">HIGH SCORE</div>
+          <div class="stat-value" id="stat-hs">0</div>
+          <div class="stat-sub">Personal best</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">RECENT GAME HISTORY</div>
+        <div id="history-empty" style="text-align:center;padding:40px;color:var(--text2);font-size:14px;">
+          🎮 No games played yet — head to <strong style="color:var(--accent)">GAMES</strong> to start!
+        </div>
+        <table class="history-table" id="history-table" style="display:none">
+          <thead>
+            <tr>
+              <th>GAME</th><th>DATE</th><th>SCORE</th><th>RESULT</th>
+            </tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    
+    <div id="section-games" class="section">
+      <div class="dash-header">
+        <h2>GAME ARENA</h2>
+        <p>Camera-powered games — your hand IS the controller</p>
+      </div>
+      <div class="games-grid">
+
+        
+        <div class="game-card" onclick="openGame('worddraw')">
+          <div class="game-thumb g1-bg">
+            <span class="game-emoji">✋</span>
+            <div class="game-cam-badge">📷 CAMERA</div>
+          </div>
+          <div class="game-info">
+            <div class="game-title">HAND WORD DRAW</div>
+            <div class="game-desc">
+              A secret word appears on screen. Use your <strong>index finger</strong> in front of the camera
+              to draw it in the air. The AI watches your hand and traces your movement on canvas.
+              Draw the shape that matches the word!
+            </div>
+            <div class="game-tags">
+              <span class="tag neural">MEDIAPIPE</span>
+              <span class="tag ai">HAND TRACKING</span>
+              <span class="tag hard">CREATIVE</span>
+            </div>
+            <button class="btn-play">▶ PLAY WITH CAMERA</button>
+          </div>
+        </div>
+
+        
+        <div class="game-card" onclick="openGame('handsnake')">
+          <div class="game-thumb g2-bg">
+            <span class="game-emoji">🐍</span>
+            <div class="game-cam-badge">📷 CAMERA</div>
+          </div>
+          <div class="game-info">
+            <div class="game-title">HAND SNAKE</div>
+            <div class="game-desc">
+              You ARE the snake! Move your <strong>open hand</strong> left, right, up or down in front
+              of the camera. The snake follows your hand direction in real-time.
+              Eat the food, avoid the walls!
+            </div>
+            <div class="game-tags">
+              <span class="tag neural">MEDIAPIPE</span>
+              <span class="tag ai">GESTURE AI</span>
+              <span class="tag hard">HARD</span>
+            </div>
+            <button class="btn-play">▶ PLAY WITH CAMERA</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    
+    <div id="section-leaderboard" class="section">
+      <div class="dash-header">
+        <h2>GLOBAL LEADERBOARD</h2>
+        <p>Top players by total score</p>
+      </div>
+      <div class="section-card">
+        <div class="section-title">WORD DRAW — TOP SCORES</div>
+        <div id="lb-worddraw"></div>
+      </div>
+      <div class="section-card" style="margin-top:20px">
+        <div class="section-title">HAND SNAKE — TOP SCORES</div>
+        <div id="lb-handsnake"></div>
+      </div>
+    </div>
+
+  </div>
+
+  
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal-box">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
